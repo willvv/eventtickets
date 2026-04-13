@@ -1,0 +1,102 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/auth-options";
+import { redirect } from "next/navigation";
+import { connectDB } from "@/lib/db/mongoose";
+import { Organization } from "@/models/Organization";
+import { Event } from "@/models/Event";
+import { Ticket } from "@/models/Ticket";
+import { Order } from "@/models/Order";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TicketStateBadge } from "@/components/tickets/ticket-state-badge";
+import { TicketState } from "@/types/ticket";
+import { formatDateCR, formatCurrency } from "@/lib/utils/date-format";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+interface PageProps {
+  params: Promise<{ orgSlug: string; eventId: string }>;
+}
+
+export default async function TicketsPage({ params }: PageProps) {
+  const { orgSlug, eventId } = await params;
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/auth/signin");
+
+  await connectDB();
+  const org = await Organization.findOne({ slug: orgSlug });
+  if (!org) redirect("/");
+
+  const event = await Event.findOne({ _id: eventId, orgId: org._id });
+  if (!event) redirect(`/org/${orgSlug}/events`);
+
+  const tickets = await Ticket.find({ eventId: event._id, orgId: org._id })
+    .sort({ createdAt: -1 })
+    .limit(100);
+
+  const stateCounts = tickets.reduce((acc, t) => {
+    acc[t.state] = (acc[t.state] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">Entradas — {event.title}</h1>
+          </div>
+          <Button asChild size="sm">
+            <Link href={`/org/${orgSlug}/events/${eventId}`}>← Volver</Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Summary */}
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(stateCounts).map(([state, count]) => (
+            <Card key={state} className="px-4 py-3">
+              <div className="flex items-center gap-2">
+                <TicketStateBadge state={state as TicketState} />
+                <span className="font-bold">{count}</span>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Ticket table */}
+        <Card>
+          <CardHeader><CardTitle>Lista de Entradas ({tickets.length})</CardTitle></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 pr-4">Sección / Asiento</th>
+                  <th className="text-left py-2 pr-4">Asistente</th>
+                  <th className="text-left py-2 pr-4">Estado</th>
+                  <th className="text-right py-2">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tickets.map((ticket) => (
+                  <tr key={ticket._id.toString()} className="border-b hover:bg-muted/50">
+                    <td className="py-2 pr-4">
+                      <div className="font-medium">{ticket.sectionName}</div>
+                      {ticket.seatLabel && <div className="text-xs text-muted-foreground">{ticket.seatLabel}</div>}
+                    </td>
+                    <td className="py-2 pr-4">{ticket.attendeeName ?? "—"}</td>
+                    <td className="py-2 pr-4">
+                      <TicketStateBadge state={ticket.state as TicketState} />
+                    </td>
+                    <td className="py-2 text-right">{formatCurrency(ticket.price, ticket.currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}

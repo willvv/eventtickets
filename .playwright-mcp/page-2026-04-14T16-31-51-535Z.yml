@@ -1,0 +1,28 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - heading "Editor de Mapa" [level=1] [ref=e5]
+    - main [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - button [disabled]:
+            - img
+          - button [disabled]:
+            - img
+          - button "Asientos Numerados" [ref=e10]:
+            - img [ref=e11]
+            - text: Asientos Numerados
+          - button "Mesas" [ref=e12]:
+            - img [ref=e13]
+            - text: Mesas
+          - button "Área General" [ref=e14]:
+            - img [ref=e15]
+            - text: Área General
+          - button [disabled]:
+            - img
+          - button "Guardar" [ref=e18]:
+            - img [ref=e19]
+            - text: Guardar
+        - generic [ref=e25]: ESCENARIO
+  - button "Open Next.js Dev Tools" [ref=e31] [cursor=pointer]:
+    - img [ref=e32]

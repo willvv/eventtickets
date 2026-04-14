@@ -381,6 +381,35 @@ export const ticketsRouter = router({
       return { order, tickets, paymentMethod };
     }),
 
+  cancelOrder: orgMemberProcedure
+    .input(z.object({ orderId: z.string(), orgId: z.string(), reason: z.string().optional() }))
+    .mutation(async ({ input, ctx }) => {
+      return withTransaction(async (session) => {
+        const order = await Order.findOne({ _id: input.orderId, orgId: input.orgId }).session(session);
+        if (!order) throw new TRPCError({ code: "NOT_FOUND" });
+        if (order.status === "cancelled") throw new TRPCError({ code: "BAD_REQUEST", message: "Orden ya cancelada" });
+
+        await Order.findByIdAndUpdate(input.orderId, { status: "cancelled" }, { session });
+        await Ticket.updateMany(
+          { orderId: input.orderId, orgId: input.orgId, state: { $nin: [TicketState.SCANNED] } },
+          { state: TicketState.CANCELLED, cancelledAt: new Date() },
+          { session }
+        );
+
+        await AuditLog.create([{
+          orgId: input.orgId,
+          actorId: ctx.session.user.id,
+          actorRole: ctx.session.user.role,
+          action: "order.cancel",
+          resourceType: "order",
+          resourceId: input.orderId,
+          metadata: { reason: input.reason },
+        }], { session });
+
+        return { success: true };
+      });
+    }),
+
   getEventStats: orgMemberProcedure
     .input(z.object({ eventId: z.string(), orgId: z.string() }))
     .query(async ({ input, ctx }) => {

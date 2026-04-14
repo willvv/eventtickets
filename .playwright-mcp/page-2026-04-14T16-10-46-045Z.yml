@@ -1,0 +1,16 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Entradas CR" [level=3] [ref=e5]
+      - paragraph [ref=e6]: Inicie sesión para continuar
+    - generic [ref=e7]:
+      - button "Continuar con Google" [ref=e9]:
+        - img [ref=e10]
+        - text: Continuar con Google
+      - generic [ref=e19]: O con contraseña
+      - generic [ref=e20]:
+        - textbox "correo@ejemplo.com" [ref=e21]
+        - textbox "Contraseña" [ref=e22]
+        - button "Iniciar Sesión" [ref=e23]
+  - button "Open Next.js Dev Tools" [ref=e29] [cursor=pointer]:
+    - img [ref=e30]

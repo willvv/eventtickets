@@ -1,0 +1,85 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "Entradas CR Entradas CR" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "Entradas CR" [ref=e7]
+          - generic [ref=e8]: Entradas CR
+        - generic [ref=e10]: Discoteca Demo
+        - navigation [ref=e11]:
+          - link "Panel" [ref=e12] [cursor=pointer]:
+            - /url: /org/discoteca-demo
+          - link "Eventos" [ref=e13] [cursor=pointer]:
+            - /url: /org/discoteca-demo/events
+          - link "Órdenes" [ref=e14] [cursor=pointer]:
+            - /url: /org/discoteca-demo/orders
+          - link "Miembros" [ref=e15] [cursor=pointer]:
+            - /url: /org/discoteca-demo/members
+          - link "Config" [ref=e16] [cursor=pointer]:
+            - /url: /org/discoteca-demo/settings
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - heading "Eventos" [level=3] [ref=e21]:
+            - img [ref=e22]
+            - text: Eventos
+          - generic [ref=e25]: "5"
+        - generic [ref=e26]:
+          - heading "Entradas Emitidas" [level=3] [ref=e28]:
+            - img [ref=e29]
+            - text: Entradas Emitidas
+          - generic [ref=e32]: "3"
+        - generic [ref=e33]:
+          - heading "Total Entradas" [level=3] [ref=e35]:
+            - img [ref=e36]
+            - text: Total Entradas
+          - generic [ref=e40]: "4"
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - heading "Eventos Recientes" [level=2] [ref=e43]
+          - link "+ Crear Evento" [ref=e44] [cursor=pointer]:
+            - /url: /org/discoteca-demo/events/new
+        - generic [ref=e45]:
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - paragraph [ref=e49]: Noche de DJ — Año Nuevo 2026
+              - paragraph [ref=e50]: Centro de Eventos Nacional
+            - generic [ref=e51]:
+              - generic [ref=e52]: Publicado
+              - link "Ver" [ref=e53] [cursor=pointer]:
+                - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b87107
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - paragraph [ref=e57]: Festival Privado — Prueba de Sistema
+              - paragraph [ref=e58]: Finca Privada
+            - generic [ref=e59]:
+              - generic [ref=e60]: Borrador
+              - link "Ver" [ref=e61] [cursor=pointer]:
+                - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b87110
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - paragraph [ref=e65]: Test Event Creado
+              - paragraph [ref=e66]: Teatro Nacional
+            - generic [ref=e67]:
+              - generic [ref=e68]: Borrador
+              - link "Ver" [ref=e69] [cursor=pointer]:
+                - /url: /org/discoteca-demo/events/69de5d0ee1254b1e1b04cb71
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - paragraph [ref=e73]: Concierto en Vivo — Bandas Ticas 2026
+              - paragraph [ref=e74]: Teatro Nacional
+            - generic [ref=e75]:
+              - generic [ref=e76]: Publicado
+              - link "Ver" [ref=e77] [cursor=pointer]:
+                - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b8710a
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - paragraph [ref=e81]: Partido de Fútbol — Clásico Nacional
+              - paragraph [ref=e82]: Estadio Nacional
+            - generic [ref=e83]:
+              - generic [ref=e84]: Publicado
+              - link "Ver" [ref=e85] [cursor=pointer]:
+                - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b8710d
+  - button "Open Next.js Dev Tools" [ref=e91] [cursor=pointer]:
+    - img [ref=e92]

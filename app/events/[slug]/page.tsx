@@ -3,7 +3,17 @@ import { useParams, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+
+function formatCurrency(amount: number, currency: string) {
+  if (currency === "CRC") return `₡${amount.toLocaleString("es-CR")}`;
+  return `$${amount.toLocaleString("en-US")}`;
+}
+
+function sinpeSmsLink(phone: string, amount: number) {
+  return `sms:${phone.replace(/\D/g, "")}?body=${encodeURIComponent(`PASE ${amount}`)}`;
+}
 
 export default function EventDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -11,8 +21,8 @@ export default function EventDetailPage() {
 
   const { data: event, isLoading, error } = trpc.events.getPublicBySlug.useQuery({ slug });
 
-  const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [qty, setQty] = useState(1);
+  // quantities per sectionId
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,54 +30,56 @@ export default function EventDetailPage() {
   const [orderError, setOrderError] = useState("");
 
   const reserveMutation = trpc.tickets.reserve.useMutation({
-    onSuccess: (data) => {
-      router.push(`/orders/${(data.order as any)._id}`);
-    },
-    onError: (e) => {
-      setOrderError(e.message);
-    },
+    onSuccess: (data) => router.push(`/orders/${(data.order as any)._id}`),
+    onError: (e) => setOrderError(e.message),
   });
 
-  if (isLoading) return <div className="p-8 text-center">Cargando evento...</div>;
-  if (error || !event) return <div className="p-8 text-center">Evento no encontrado.</div>;
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#f0faf9" }}>
+      <div className="text-center">
+        <Image src="/logo.png" alt="Entradas CR" width={64} height={64} className="mx-auto mb-3 opacity-70" />
+        <p className="text-gray-500">Cargando evento...</p>
+      </div>
+    </div>
+  );
+  if (error || !event) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-gray-500">Evento no encontrado.</p>
+    </div>
+  );
 
   const org = event.orgId as any;
   const publicPaymentMethods = org?.paymentMethods?.filter(
     (m: any) => m.availableInPublicPortal && m.isActive
   ) ?? [];
 
-  const section = event.sectionPrices?.find((s: any) => s.sectionId === selectedSection);
-  const total = section ? section.price * qty : 0;
   const selectedPaymentMethod = publicPaymentMethods.find((m: any) => m.id === paymentMethod);
+  const eventDate = new Date(event.date);
 
-  function formatCurrency(amount: number, currency: string) {
-    if (currency === "CRC") return `₡${amount.toLocaleString("es-CR")}`;
-    return `$${amount.toLocaleString("en-US")}`;
-  }
+  // Build seats from quantities
+  const selectedSeats = (event.sectionPrices ?? []).flatMap((s: any) => {
+    const qty = quantities[s.sectionId] ?? 0;
+    return Array.from({ length: qty }, (_, i) => ({
+      sectionId: s.sectionId,
+      sectionName: s.sectionName,
+      seatLabel: `General ${i + 1}`,
+      price: s.price,
+      currency: s.currency,
+    }));
+  });
 
-  function sinpeSmsLink(recipientPhone: string, amount: number) {
-    const cleaned = recipientPhone.replace(/\D/g, "");
-    const body = encodeURIComponent(`PASE ${amount}`);
-    return `sms:${cleaned}?body=${body}`;
-  }
+  const totalQty = selectedSeats.length;
+  const totalAmount = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+  const currency = selectedSeats[0]?.currency ?? "CRC";
 
   function handleReserve(e: React.FormEvent) {
     e.preventDefault();
-    if (!section || !paymentMethod) return;
+    if (totalQty === 0 || !paymentMethod) return;
     setOrderError("");
-
-    const seats = Array.from({ length: qty }, (_, i) => ({
-      sectionId: section.sectionId,
-      sectionName: section.sectionName,
-      seatLabel: `General ${i + 1}`,
-      price: section.price,
-      currency: section.currency,
-    }));
-
     reserveMutation.mutate({
       eventId: (event as any)._id.toString(),
       orgId: (event as any).orgId._id?.toString() ?? (event as any).orgId.toString(),
-      seats,
+      seats: selectedSeats,
       paymentMethodId: paymentMethod,
       customerName,
       customerPhone: phone,
@@ -75,91 +87,139 @@ export default function EventDetailPage() {
     });
   }
 
-  const eventDate = new Date(event.date);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-4 py-3 flex items-center gap-4">
-        <Link href="/events" className="text-blue-600 hover:underline">← Eventos</Link>
-        <span className="font-semibold text-lg">{event.title}</span>
+    <div className="min-h-screen" style={{ backgroundColor: "#f5fafa" }}>
+      {/* Navbar */}
+      <header style={{ backgroundColor: "#1B426E" }} className="text-white shadow-md">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
+          <Link href="/events" className="flex items-center gap-2">
+            <Image src="/logo-32.png" alt="Entradas CR" width={28} height={28} className="rounded" />
+            <span className="font-bold text-sm" style={{ color: "#00CDB9" }}>Entradas CR</span>
+          </Link>
+          <span className="text-white/30 mx-1">|</span>
+          <span className="text-white/80 text-sm truncate">{event.title}</span>
+        </div>
       </header>
 
-      <div className="max-w-3xl mx-auto p-4 space-y-6">
-        {/* Event info */}
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h1 className="text-2xl font-bold mb-2">{event.title}</h1>
-          <p className="text-gray-600 mb-1">
-            {eventDate.toLocaleDateString("es-CR", { dateStyle: "full" })} a las{" "}
-            {eventDate.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })}
-          </p>
-          <p className="text-gray-600 mb-3">{event.locationName} — {event.locationAddress}</p>
-          {event.description && <p className="text-gray-700">{event.description}</p>}
+      <div className="max-w-2xl mx-auto p-4 space-y-5 pb-12">
+        {/* Event info card */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden mt-4">
+          <div className="h-2" style={{ background: "linear-gradient(90deg, #00CDB9, #1B426E, #FF7F50)" }} />
+          <div className="p-5">
+            <h1 className="text-2xl font-bold mb-1" style={{ color: "#1B426E" }}>{event.title}</h1>
+            <p className="text-gray-600 text-sm mb-0.5">
+              📅 {eventDate.toLocaleDateString("es-CR", { dateStyle: "full" })} a las{" "}
+              {eventDate.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })}
+            </p>
+            <p className="text-gray-600 text-sm">📍 {event.locationName}{event.locationAddress ? ` — ${event.locationAddress}` : ""}</p>
+            {event.description && <p className="text-gray-600 text-sm mt-2">{event.description}</p>}
+          </div>
         </div>
 
         {/* Ticket purchase form */}
-        <form onSubmit={handleReserve} className="bg-white rounded-lg p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold">Seleccionar Entradas</h2>
-
-          {/* Section selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Zona / Sección</label>
-            <div className="grid gap-2">
-              {event.sectionPrices?.map((s: any) => (
-                <button
-                  key={s.sectionId}
-                  type="button"
-                  onClick={() => setSelectedSection(s.sectionId)}
-                  className={`p-3 rounded border text-left transition-colors ${
-                    selectedSection === s.sectionId
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-400"
-                  }`}
-                >
-                  <span className="font-medium">{s.sectionName}</span>
-                  <span className="ml-2 text-blue-700">{formatCurrency(s.price, s.currency)}</span>
-                </button>
-              ))}
+        <form onSubmit={handleReserve} className="space-y-4">
+          {/* Section qty selectors */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b">
+              <h2 className="font-semibold" style={{ color: "#1B426E" }}>Seleccionar Entradas</h2>
+            </div>
+            <div className="divide-y">
+              {(event.sectionPrices ?? []).map((s: any) => {
+                const qty = quantities[s.sectionId] ?? 0;
+                return (
+                  <div key={s.sectionId} className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <p className="font-medium text-sm">{s.sectionName}</p>
+                      <p className="text-sm font-semibold" style={{ color: "#00CDB9" }}>
+                        {formatCurrency(s.price, s.currency)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setQuantities((q) => ({ ...q, [s.sectionId]: Math.max(0, (q[s.sectionId] ?? 0) - 1) }))}
+                        disabled={qty === 0}
+                        className="w-8 h-8 rounded-full border-2 font-bold text-lg flex items-center justify-center transition-colors disabled:opacity-30"
+                        style={{ borderColor: "#00CDB9", color: "#00CDB9" }}
+                      >
+                        −
+                      </button>
+                      <span className="w-6 text-center font-bold text-base">{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantities((q) => ({ ...q, [s.sectionId]: Math.min(10, (q[s.sectionId] ?? 0) + 1) }))}
+                        disabled={qty >= 10}
+                        className="w-8 h-8 rounded-full border-2 font-bold text-lg flex items-center justify-center transition-colors disabled:opacity-30"
+                        style={{ borderColor: "#00CDB9", color: "#00CDB9" }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Quantity */}
-          {selectedSection && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Cantidad</label>
-              <div className="flex items-center gap-3 mt-1">
-                <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))}
-                  className="w-8 h-8 rounded-full border text-lg font-bold flex items-center justify-center hover:bg-gray-100">−</button>
-                <span className="w-8 text-center font-semibold">{qty}</span>
-                <button type="button" onClick={() => setQty(q => Math.min(10, q + 1))}
-                  className="w-8 h-8 rounded-full border text-lg font-bold flex items-center justify-center hover:bg-gray-100">+</button>
+          {/* Order summary */}
+          {totalQty > 0 && (
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b">
+                <h2 className="font-semibold" style={{ color: "#1B426E" }}>Resumen</h2>
+              </div>
+              <div className="p-4 space-y-1.5">
+                {(event.sectionPrices ?? []).filter((s: any) => (quantities[s.sectionId] ?? 0) > 0).map((s: any) => (
+                  <div key={s.sectionId} className="flex justify-between text-sm">
+                    <span>{quantities[s.sectionId]}× {s.sectionName}</span>
+                    <span className="font-medium">{formatCurrency(s.price * (quantities[s.sectionId] ?? 0), s.currency)}</span>
+                  </div>
+                ))}
+                <div className="border-t pt-2 flex justify-between font-bold">
+                  <span>Total ({totalQty} entrada{totalQty !== 1 ? "s" : ""})</span>
+                  <span style={{ color: "#00CDB9" }}>{formatCurrency(totalAmount, currency)}</span>
+                </div>
               </div>
             </div>
           )}
 
           {/* Payment method */}
-          {selectedSection && publicPaymentMethods.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Método de Pago</label>
-              {publicPaymentMethods.map((m: any) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setPaymentMethod(m.id)}
-                  className={`w-full p-3 rounded border text-left transition-colors ${
-                    paymentMethod === m.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
-                  }`}
-                >
-                  <p className="font-medium">{m.name}</p>
-                  {m.instructions && <p className="text-sm text-gray-500">{m.instructions}</p>}
-                  {m.accountDetails && <p className="text-sm text-gray-500">{m.accountDetails}</p>}
-                </button>
-              ))}
+          {totalQty > 0 && publicPaymentMethods.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b">
+                <h2 className="font-semibold" style={{ color: "#1B426E" }}>Método de Pago</h2>
+              </div>
+              <div className="divide-y">
+                {publicPaymentMethods.map((m: any) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setPaymentMethod(m.id)}
+                    className="w-full p-4 text-left transition-colors"
+                    style={paymentMethod === m.id ? { backgroundColor: "#e6faf8" } : {}}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0"
+                        style={{ borderColor: paymentMethod === m.id ? "#00CDB9" : "#ccc" }}>
+                        {paymentMethod === m.id && (
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#00CDB9" }} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{m.name}</p>
+                        {m.instructions && <p className="text-xs text-gray-500">{m.instructions}</p>}
+                        {m.accountDetails && <p className="text-xs text-gray-500">{m.accountDetails}</p>}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {/* Customer info + SINPE helper */}
-          {paymentMethod && (
-            <div className="space-y-3">
+          {totalQty > 0 && paymentMethod && (
+            <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+              <h2 className="font-semibold" style={{ color: "#1B426E" }}>Tus Datos</h2>
               <div>
                 <label className="text-sm font-medium text-gray-700">Nombre completo <span className="text-red-500">*</span></label>
                 <input
@@ -167,7 +227,8 @@ export default function EventDetailPage() {
                   value={customerName}
                   onChange={e => setCustomerName(e.target.value)}
                   placeholder="Juan Pérez"
-                  className="mt-1 flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                  className="mt-1 flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+                  style={{ "--tw-ring-color": "#00CDB9" } as any}
                 />
               </div>
               <div>
@@ -190,54 +251,57 @@ export default function EventDetailPage() {
                 />
               </div>
 
-              {/* SINPE Móvil helper */}
-              {selectedPaymentMethod?.type === "mobile-payment" && selectedPaymentMethod?.accountDetails && section && (
-                <div className="rounded-lg bg-green-50 border border-green-200 p-3 space-y-2">
-                  <p className="text-sm font-medium text-green-800">Pago por SINPE Móvil</p>
-                  <p className="text-sm text-green-700">
+              {/* SINPE helper */}
+              {selectedPaymentMethod?.type === "mobile-payment" && selectedPaymentMethod?.accountDetails && (
+                <div className="rounded-lg p-3 space-y-2" style={{ backgroundColor: "#e6faf8", border: "1px solid #99e8e0" }}>
+                  <p className="text-sm font-semibold" style={{ color: "#1B426E" }}>Pago por SINPE Móvil</p>
+                  <p className="text-sm" style={{ color: "#1B426E" }}>
                     Número: <strong>{selectedPaymentMethod.accountDetails}</strong>
                   </p>
-                  <p className="text-sm text-green-700">
-                    Monto: <strong>{formatCurrency(total, section.currency)}</strong>
+                  <p className="text-sm" style={{ color: "#1B426E" }}>
+                    Monto: <strong>{formatCurrency(totalAmount, currency)}</strong>
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     <a
-                      href={sinpeSmsLink(selectedPaymentMethod.accountDetails, total)}
-                      className="inline-flex items-center gap-1 rounded-md bg-green-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-green-700"
+                      href={sinpeSmsLink(selectedPaymentMethod.accountDetails, totalAmount)}
+                      className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium text-white"
+                      style={{ backgroundColor: "#00CDB9" }}
                     >
                       Abrir SMS para pagar
                     </a>
                     <button
                       type="button"
                       onClick={() => {
-                        const text = `PASE ${total}`;
-                        navigator.clipboard?.writeText(text);
-                        alert(`Copiado: "${text}"\nEnvíe este mensaje al ${selectedPaymentMethod.accountDetails}`);
+                        navigator.clipboard?.writeText(`PASE ${totalAmount}`);
+                        alert(`Copiado: "PASE ${totalAmount}"\nEnvíe al ${selectedPaymentMethod.accountDetails}`);
                       }}
-                      className="inline-flex items-center gap-1 rounded-md border border-green-600 text-green-700 px-3 py-1.5 text-sm font-medium hover:bg-green-50"
+                      className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium"
+                      style={{ borderColor: "#00CDB9", color: "#00CDB9" }}
                     >
                       Copiar mensaje
                     </button>
                   </div>
-                  <p className="text-xs text-green-600">
-                    Envíe <code className="bg-green-100 px-1 rounded">PASE {total}</code> por SMS al número {selectedPaymentMethod.accountDetails}
+                  <p className="text-xs" style={{ color: "#1B426E" }}>
+                    Envíe <code className="px-1 rounded text-xs" style={{ backgroundColor: "#c0ede9" }}>PASE {totalAmount}</code> por SMS al número {selectedPaymentMethod.accountDetails}
                   </p>
                 </div>
               )}
             </div>
           )}
 
-          {/* Total */}
-          {section && (
-            <div className="border-t pt-4 flex items-center justify-between">
-              <span className="font-semibold">Total: {formatCurrency(total, section.currency)}</span>
-              <Button type="submit" disabled={!paymentMethod || reserveMutation.isPending}>
-                {reserveMutation.isPending ? "Reservando..." : "Reservar Entradas"}
-              </Button>
-            </div>
+          {/* Submit */}
+          {totalQty > 0 && paymentMethod && (
+            <button
+              type="submit"
+              disabled={!customerName || !phone || reserveMutation.isPending}
+              className="w-full py-3 rounded-xl font-bold text-white text-base transition-opacity disabled:opacity-50"
+              style={{ backgroundColor: "#FF7F50" }}
+            >
+              {reserveMutation.isPending ? "Reservando..." : `Reservar ${totalQty} entrada${totalQty !== 1 ? "s" : ""} — ${formatCurrency(totalAmount, currency)}`}
+            </button>
           )}
 
-          {orderError && <p className="text-sm text-red-600">{orderError}</p>}
+          {orderError && <p className="text-sm text-red-600 text-center">{orderError}</p>}
         </form>
       </div>
     </div>

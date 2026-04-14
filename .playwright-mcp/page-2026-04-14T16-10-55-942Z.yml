@@ -1,0 +1,14 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entradas CR" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Plataforma de venta y gestión de entradas para eventos en Costa Rica
+      - generic [ref=e7]:
+        - link "Ver Eventos" [ref=e8] [cursor=pointer]:
+          - /url: /events
+        - link "Ir al Panel" [ref=e9] [cursor=pointer]:
+          - /url: /org/discoteca-demo
+  - button "Open Next.js Dev Tools" [ref=e15] [cursor=pointer]:
+    - img [ref=e16]
+  - alert [ref=e19]

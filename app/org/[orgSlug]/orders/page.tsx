@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IssueOrderButton } from "@/components/tickets/issue-order-button";
+import { CancelOrderButton } from "@/components/tickets/cancel-order-button";
+import { OrgNavbar } from "@/components/layout/org-navbar";
 import { formatCurrency } from "@/lib/utils/date-format";
 import Link from "next/link";
 export const dynamic = "force-dynamic";
@@ -72,39 +74,35 @@ export default async function OrgOrdersPage({ params, searchParams }: PageProps)
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-xl font-bold">Órdenes — {org.name}</h1>
-            <p className="text-sm text-muted-foreground">{orders.length} órdenes mostradas</p>
-          </div>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/org/${orgSlug}`}>← Panel</Link>
-          </Button>
-        </div>
-      </header>
+      <OrgNavbar orgSlug={orgSlug} orgName={org.name} />
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        {/* Summary cards */}
+        {/* Summary filter cards */}
         <div className="flex flex-wrap gap-3">
           <Link href={`/org/${orgSlug}/orders`}>
-            <Card className={`px-4 py-3 cursor-pointer hover:shadow-md transition-shadow ${!status ? "ring-2 ring-blue-500" : ""}`}>
-              <div className="text-sm font-medium text-muted-foreground">Todos</div>
-              <div className="text-xl font-bold">{totalByStatus.reduce((s, r) => s + r.count, 0)}</div>
+            <Card className={`px-4 py-3 cursor-pointer hover:shadow-md transition-shadow ${!status ? "ring-2" : ""}`}
+              style={!status ? { ringColor: "#00CDB9", borderColor: "#00CDB9" } : {}}>
+              <div className="text-xs font-medium text-muted-foreground">Todos</div>
+              <div className="text-2xl font-bold">{totalByStatus.reduce((s, r) => s + r.count, 0)}</div>
             </Card>
           </Link>
-          {totalByStatus.map((row) => (
-            <Link key={row._id} href={`/org/${orgSlug}/orders?status=${row._id}`}>
-              <Card className={`px-4 py-3 cursor-pointer hover:shadow-md transition-shadow ${status === row._id ? "ring-2 ring-blue-500" : ""}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant={STATUS_VARIANTS[row._id] ?? "secondary"}>
-                    {STATUS_LABELS[row._id] ?? row._id}
-                  </Badge>
-                </div>
-                <div className="text-xl font-bold">{row.count}</div>
-              </Card>
-            </Link>
-          ))}
+          {ALL_STATUSES.map((s) => {
+            const row = totalByStatus.find((r) => r._id === s);
+            if (!row) return null;
+            return (
+              <Link key={s} href={`/org/${orgSlug}/orders?status=${s}`}>
+                <Card className={`px-4 py-3 cursor-pointer hover:shadow-md transition-shadow ${status === s ? "border-2" : ""}`}
+                  style={status === s ? { borderColor: "#00CDB9" } : {}}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant={STATUS_VARIANTS[s] ?? "secondary"}>
+                      {STATUS_LABELS[s] ?? s}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold">{row.count}</div>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Orders table */}
@@ -112,6 +110,7 @@ export default async function OrgOrdersPage({ params, searchParams }: PageProps)
           <CardHeader>
             <CardTitle>
               {status ? `Órdenes — ${STATUS_LABELS[status] ?? status}` : "Todas las Órdenes"}
+              <span className="text-sm font-normal text-muted-foreground ml-2">({orders.length})</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
@@ -126,54 +125,58 @@ export default async function OrgOrdersPage({ params, searchParams }: PageProps)
                     <th className="text-left py-2 pr-4">Pago</th>
                     <th className="text-left py-2 pr-4">Estado</th>
                     <th className="text-right py-2 pr-4">Total</th>
-                    <th className="text-right py-2">Acción</th>
+                    <th className="text-right py-2">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map((order) => {
                     const event = order.eventId as any;
+                    const orderId = (order._id as any).toString();
                     return (
-                      <tr key={(order._id as any).toString()} className="border-b hover:bg-muted/50">
-                        <td className="py-2 pr-4">
+                      <tr key={orderId} className="border-b hover:bg-muted/50 align-top">
+                        <td className="py-3 pr-4">
                           <div className="font-medium">{order.customerName ?? "—"}</div>
-                          {order.customerPhone && (
-                            <div className="text-xs text-muted-foreground">{order.customerPhone}</div>
-                          )}
-                          {order.customerEmail && (
-                            <div className="text-xs text-muted-foreground">{order.customerEmail}</div>
-                          )}
+                          {order.customerPhone && <div className="text-xs text-muted-foreground">{order.customerPhone}</div>}
+                          {order.customerEmail && <div className="text-xs text-muted-foreground">{order.customerEmail}</div>}
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-3 pr-4">
                           <Link
                             href={`/org/${orgSlug}/events/${(event?._id ?? order.eventId)?.toString()}/tickets`}
-                            className="text-blue-600 hover:underline"
+                            className="hover:underline font-medium"
+                            style={{ color: "#1B426E" }}
                           >
                             {event?.title ?? "—"}
                           </Link>
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-3 pr-4">
                           <div>{PAYMENT_TYPE_LABELS[order.paymentMethodType] ?? order.paymentMethodType}</div>
-                          {order.paymentNotes && (
-                            <div className="text-xs text-muted-foreground truncate max-w-[140px]">{order.paymentNotes}</div>
-                          )}
+                          {order.paymentNotes && <div className="text-xs text-muted-foreground truncate max-w-[120px]">{order.paymentNotes}</div>}
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-3 pr-4">
                           <Badge variant={STATUS_VARIANTS[order.status] ?? "secondary"}>
                             {STATUS_LABELS[order.status] ?? order.status}
                           </Badge>
                         </td>
-                        <td className="py-2 text-right pr-4 font-medium">
+                        <td className="py-3 text-right pr-4 font-semibold">
                           {formatCurrency(order.totalAmount, order.currency)}
                         </td>
-                        <td className="py-2 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="py-3 text-right">
+                          <div className="flex items-center justify-end gap-2 flex-wrap">
                             <Button asChild size="sm" variant="ghost">
-                              <Link href={`/orders/${(order._id as any).toString()}`}>Ver</Link>
+                              <Link href={`/orders/${orderId}`}>Ver</Link>
                             </Button>
                             {(order.status === "reserved" || order.status === "paid") && (
                               <IssueOrderButton
-                                orderId={(order._id as any).toString()}
+                                orderId={orderId}
                                 orgId={org._id.toString()}
+                                customerName={order.customerName ?? undefined}
+                              />
+                            )}
+                            {order.status !== "cancelled" && order.status !== "issued" && (
+                              <CancelOrderButton
+                                orderId={orderId}
+                                orgId={org._id.toString()}
+                                customerName={order.customerName ?? undefined}
                               />
                             )}
                           </div>

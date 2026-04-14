@@ -1,0 +1,105 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Órdenes — Discoteca Demo" [level=1] [ref=e6]
+          - paragraph [ref=e7]: 4 órdenes mostradas
+        - link "← Panel" [ref=e8] [cursor=pointer]:
+          - /url: /org/discoteca-demo
+    - main [ref=e9]:
+      - generic [ref=e10]:
+        - link "Todos 4" [ref=e11] [cursor=pointer]:
+          - /url: /org/discoteca-demo/orders
+          - generic [ref=e12]:
+            - generic [ref=e13]: Todos
+            - generic [ref=e14]: "4"
+        - link "Reservado 2" [ref=e15] [cursor=pointer]:
+          - /url: /org/discoteca-demo/orders?status=reserved
+          - generic [ref=e16]:
+            - generic [ref=e18]: Reservado
+            - generic [ref=e19]: "2"
+        - link "Emitido 2" [ref=e20] [cursor=pointer]:
+          - /url: /org/discoteca-demo/orders?status=issued
+          - generic [ref=e21]:
+            - generic [ref=e23]: Emitido
+            - generic [ref=e24]: "2"
+      - generic [ref=e25]:
+        - heading "Todas las Órdenes" [level=3] [ref=e27]
+        - table [ref=e29]:
+          - rowgroup [ref=e30]:
+            - row "Cliente Evento Pago Estado Total Acción" [ref=e31]:
+              - columnheader "Cliente" [ref=e32]
+              - columnheader "Evento" [ref=e33]
+              - columnheader "Pago" [ref=e34]
+              - columnheader "Estado" [ref=e35]
+              - columnheader "Total" [ref=e36]
+              - columnheader "Acción" [ref=e37]
+          - rowgroup [ref=e38]:
+            - row "Pedro perez 9999-0000 Noche de DJ — Año Nuevo 2026 SINPE Móvil Reservado ₡45 000 Ver Emitir" [ref=e39]:
+              - cell "Pedro perez 9999-0000" [ref=e40]:
+                - generic [ref=e41]: Pedro perez
+                - generic [ref=e42]: 9999-0000
+              - cell "Noche de DJ — Año Nuevo 2026" [ref=e43]:
+                - link "Noche de DJ — Año Nuevo 2026" [ref=e44] [cursor=pointer]:
+                  - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b87107/tickets
+              - cell "SINPE Móvil" [ref=e45]:
+                - generic [ref=e46]: SINPE Móvil
+              - cell "Reservado" [ref=e47]:
+                - generic [ref=e48]: Reservado
+              - cell "₡45 000" [ref=e49]
+              - cell "Ver Emitir" [ref=e50]:
+                - generic [ref=e51]:
+                  - link "Ver" [ref=e52] [cursor=pointer]:
+                    - /url: /orders/69de6a565bcad754250e39d8
+                  - button "Emitir" [ref=e54]
+            - row "María García 88881234 Noche de DJ — Año Nuevo 2026 SINPE Móvil Emitido ₡9 000 Ver" [ref=e55]:
+              - cell "María García 88881234" [ref=e56]:
+                - generic [ref=e57]: María García
+                - generic [ref=e58]: "88881234"
+              - cell "Noche de DJ — Año Nuevo 2026" [ref=e59]:
+                - link "Noche de DJ — Año Nuevo 2026" [ref=e60] [cursor=pointer]:
+                  - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b87107/tickets
+              - cell "SINPE Móvil" [ref=e61]:
+                - generic [ref=e62]: SINPE Móvil
+              - cell "Emitido" [ref=e63]:
+                - generic [ref=e64]: Emitido
+              - cell "₡9 000" [ref=e65]
+              - cell "Ver" [ref=e66]:
+                - link "Ver" [ref=e68] [cursor=pointer]:
+                  - /url: /orders/69de66d35bcad754250e39ad
+            - row "Super Admin superadmin@entradascr.com Noche de DJ — Año Nuevo 2026 SINPE Móvil Reservado ₡45 000 Ver Emitir" [ref=e69]:
+              - cell "Super Admin superadmin@entradascr.com" [ref=e70]:
+                - generic [ref=e71]: Super Admin
+                - generic [ref=e72]: superadmin@entradascr.com
+              - cell "Noche de DJ — Año Nuevo 2026" [ref=e73]:
+                - link "Noche de DJ — Año Nuevo 2026" [ref=e74] [cursor=pointer]:
+                  - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b87107/tickets
+              - cell "SINPE Móvil" [ref=e75]:
+                - generic [ref=e76]: SINPE Móvil
+              - cell "Reservado" [ref=e77]:
+                - generic [ref=e78]: Reservado
+              - cell "₡45 000" [ref=e79]
+              - cell "Ver Emitir" [ref=e80]:
+                - generic [ref=e81]:
+                  - link "Ver" [ref=e82] [cursor=pointer]:
+                    - /url: /orders/69de64985bcad754250e303b
+                  - button "Emitir" [ref=e84]
+            - row "Super Admin superadmin@entradascr.com Noche de DJ — Año Nuevo 2026 SINPE Móvil Emitido ₡9 000 Ver" [ref=e85]:
+              - cell "Super Admin superadmin@entradascr.com" [ref=e86]:
+                - generic [ref=e87]: Super Admin
+                - generic [ref=e88]: superadmin@entradascr.com
+              - cell "Noche de DJ — Año Nuevo 2026" [ref=e89]:
+                - link "Noche de DJ — Año Nuevo 2026" [ref=e90] [cursor=pointer]:
+                  - /url: /org/discoteca-demo/events/69ddb2e72adfbbf548b87107/tickets
+              - cell "SINPE Móvil" [ref=e91]:
+                - generic [ref=e92]: SINPE Móvil
+              - cell "Emitido" [ref=e93]:
+                - generic [ref=e94]: Emitido
+              - cell "₡9 000" [ref=e95]
+              - cell "Ver" [ref=e96]:
+                - link "Ver" [ref=e98] [cursor=pointer]:
+                  - /url: /orders/69de58eee1254b1e1b04c90d
+  - button "Open Next.js Dev Tools" [ref=e104] [cursor=pointer]:
+    - img [ref=e105]
+  - alert [ref=e108]

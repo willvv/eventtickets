@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDateCR, formatCurrency } from "@/lib/utils/date-format";
+import { OrgNavbar } from "@/components/layout/org-navbar";
 import Link from "next/link";
 import { TicketState } from "@/types/ticket";
 export const dynamic = "force-dynamic";
@@ -44,30 +45,27 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-xl font-bold">{event.title}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant={event.status === "published" ? "success" : event.status === "draft" ? "secondary" : "destructive"} className="text-xs">
-                {STATUS_LABELS[event.status] ?? event.status}
-              </Badge>
-              <span className="text-sm text-muted-foreground">{formatDateCR(event.date, "PPPp")}</span>
-            </div>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/org/${orgSlug}/events/${eventId}/scanner`}>Escáner</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/org/${orgSlug}/events/${eventId}/tickets`}>Entradas</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/org/${orgSlug}/events/${eventId}/layout-editor`}>Editor de Mapa</Link>
-            </Button>
-          </div>
+      <OrgNavbar orgSlug={orgSlug} orgName={org.name} eventTitle={event.title} eventId={eventId} />
+
+      <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <Badge variant={event.status === "published" ? "success" : event.status === "draft" ? "secondary" : "destructive"} className="text-xs">
+            {STATUS_LABELS[event.status] ?? event.status}
+          </Badge>
+          <span className="text-sm text-muted-foreground">{formatDateCR(event.date, "PPPp")}</span>
         </div>
-      </header>
+        <div className="flex gap-2 flex-wrap">
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/org/${orgSlug}/events/${eventId}/scanner`}>Escáner</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/org/${orgSlug}/events/${eventId}/tickets`}>Entradas</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/org/${orgSlug}/events/${eventId}/layout-editor`}>Editor de Mapa</Link>
+          </Button>
+        </div>
+      </div>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         {/* Stats */}

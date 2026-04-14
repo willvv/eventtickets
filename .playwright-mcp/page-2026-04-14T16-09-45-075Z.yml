@@ -1,0 +1,64 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e13]:
+      - link "← Eventos" [ref=e14] [cursor=pointer]:
+        - /url: /events
+      - generic [ref=e15]: Noche de DJ — Año Nuevo 2026
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - heading "Noche de DJ — Año Nuevo 2026" [level=1] [ref=e18]
+        - paragraph [ref=e19]: jueves, 31 de diciembre de 2026 a las 10:00 p. m.
+        - paragraph [ref=e20]: Centro de Eventos Nacional — Av. Central, San José, Costa Rica
+        - paragraph [ref=e21]: La mejor noche de música electrónica del año. DJs internacionales en vivo toda la noche.
+      - generic [ref=e22]:
+        - heading "Seleccionar Entradas" [level=2] [ref=e23]
+        - generic [ref=e24]:
+          - text: Zona / Sección
+          - generic [ref=e25]:
+            - button "VIP — Mesas Frente₡45 000" [ref=e26]
+            - button "Butacas Numeradas₡22 000" [ref=e27]
+            - button "General de Pie₡9 000" [ref=e28]
+        - generic [ref=e29]:
+          - text: Cantidad
+          - generic [ref=e30]:
+            - button "−" [ref=e31]
+            - generic [ref=e32]: "1"
+            - button "+" [ref=e33]
+        - generic [ref=e34]:
+          - text: Método de Pago
+          - button "SINPE Móvil Transferir al 8888-0000 a nombre de Discoteca Demo 88880000" [active] [ref=e35]:
+            - paragraph [ref=e36]: SINPE Móvil
+            - paragraph [ref=e37]: Transferir al 8888-0000 a nombre de Discoteca Demo
+            - paragraph [ref=e38]: "88880000"
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: Nombre completo *
+            - textbox "Juan Pérez" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]: Teléfono *
+            - textbox "8888-0000" [ref=e47]
+          - generic [ref=e48]:
+            - text: Notas de pago
+            - textbox "Confirmación de transferencia..." [ref=e49]
+          - generic [ref=e50]:
+            - paragraph [ref=e51]: Pago por SINPE Móvil
+            - paragraph [ref=e52]:
+              - text: "Número:"
+              - strong [ref=e53]: "88880000"
+            - paragraph [ref=e54]:
+              - text: "Monto:"
+              - strong [ref=e55]: ₡9 000
+            - generic [ref=e56]:
+              - link "Abrir SMS para pagar" [ref=e57] [cursor=pointer]:
+                - /url: sms:88880000?body=PASE%209000
+              - button "Copiar mensaje" [ref=e58]
+            - paragraph [ref=e59]:
+              - text: Envíe
+              - code [ref=e60]: PASE 9000
+              - text: por SMS al número 88880000
+        - generic [ref=e39]:
+          - generic [ref=e40]: "Total: ₡9 000"
+          - button "Reservar Entradas" [ref=e61]
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e12]

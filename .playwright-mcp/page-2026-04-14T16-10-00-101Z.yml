@@ -1,0 +1,45 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e12]
+  - generic [ref=e62]:
+    - banner [ref=e63]:
+      - link "← Eventos" [ref=e64] [cursor=pointer]:
+        - /url: /events
+      - generic [ref=e65]: Mi Reserva
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - paragraph [ref=e70]: Noche de DJ — Año Nuevo 2026
+            - paragraph [ref=e71]: 31 dic 2026 a las 10:00 p. m.
+            - paragraph [ref=e72]: Centro de Eventos Nacional
+          - generic [ref=e73]: Pendiente de pago
+        - generic [ref=e74]:
+          - paragraph [ref=e75]: "A nombre de: María García"
+          - paragraph [ref=e76]: "Teléfono: 88881234"
+          - paragraph [ref=e77]: "Total: ₡9 000"
+      - generic [ref=e78]:
+        - paragraph [ref=e79]: Instrucciones de pago — SINPE Móvil
+        - paragraph [ref=e80]:
+          - text: Envíe
+          - strong [ref=e81]: ₡9 000
+          - text: "por SINPE Móvil al número:"
+        - paragraph [ref=e82]: "88880000"
+        - paragraph [ref=e83]:
+          - text: "Mensaje SMS:"
+          - code [ref=e84]: PASE 9000
+        - generic [ref=e85]:
+          - link "Abrir SMS para pagar" [ref=e86] [cursor=pointer]:
+            - /url: sms:88880000?body=PASE%209000
+          - button "Copiar mensaje" [ref=e87]
+        - paragraph [ref=e88]: Transferir al 8888-0000 a nombre de Discoteca Demo
+      - paragraph [ref=e89]: Sus entradas se emitirán una vez confirmado el pago. Guarde este enlace para acceder a sus entradas.
+      - generic [ref=e90]:
+        - heading "Entradas (1)" [level=2] [ref=e91]
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - paragraph [ref=e95]: General de Pie
+            - paragraph [ref=e96]: General 1
+            - paragraph [ref=e97]: ₡9 000
+          - generic [ref=e98]: Reservado

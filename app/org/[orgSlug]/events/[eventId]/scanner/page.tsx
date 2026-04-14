@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Organization } from "@/models/Organization";
 import { Event } from "@/models/Event";
 import { QrScanner } from "@/components/scanner/qr-scanner";
+import { OrgNavbar } from "@/components/layout/org-navbar";
 export const dynamic = "force-dynamic";
 
 interface PageProps {
@@ -24,12 +25,7 @@ export default async function ScannerPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold">Escáner</h1>
-          {event && <p className="text-sm text-muted-foreground">{event.title}</p>}
-        </div>
-      </header>
+      <OrgNavbar orgSlug={orgSlug} orgName={org.name} eventTitle={event?.title} eventId={eventId} />
       <main className="max-w-2xl mx-auto px-4 py-8">
         <QrScanner orgId={org._id.toString()} eventId={eventId} />
       </main>

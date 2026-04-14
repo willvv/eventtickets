@@ -8,8 +8,9 @@ import { Ticket } from "@/models/Ticket";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils/date-format";
+import { OrgNavbar } from "@/components/layout/org-navbar";
 import Link from "next/link";
-import { CalendarDays, Ticket as TicketIcon, Users, TrendingUp } from "lucide-react";
+import { CalendarDays, Ticket as TicketIcon, TrendingUp } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 interface PageProps {
@@ -33,31 +34,10 @@ export default async function OrgDashboard({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">{org.name}</h1>
-            <p className="text-sm text-muted-foreground">Panel de Administración</p>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/org/${orgSlug}/events`}>Eventos</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/org/${orgSlug}/orders`}>Órdenes</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/org/${orgSlug}/members`}>Miembros</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/org/${orgSlug}/settings`}>Configuración</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <OrgNavbar orgSlug={orgSlug} orgName={org.name} />
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -93,8 +73,8 @@ export default async function OrgDashboard({ params }: PageProps) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Eventos Recientes</h2>
-            <Button asChild size="sm">
-              <Link href={`/org/${orgSlug}/events/new`}>Crear Evento</Link>
+            <Button asChild size="sm" style={{ backgroundColor: "#FF7F50", color: "white" }}>
+              <Link href={`/org/${orgSlug}/events/new`}>+ Crear Evento</Link>
             </Button>
           </div>
           <div className="space-y-3">
@@ -106,11 +86,13 @@ export default async function OrgDashboard({ params }: PageProps) {
                     <p className="text-sm text-muted-foreground">{event.locationName}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      event.status === "published" ? "bg-green-100 text-green-800" :
-                      event.status === "draft" ? "bg-gray-100 text-gray-800" :
-                      "bg-red-100 text-red-800"
-                    }`}>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      event.status === "published" ? "bg-teal/10 text-teal" :
+                      event.status === "draft" ? "bg-gray-100 text-gray-600" :
+                      "bg-red-100 text-red-700"
+                    }`}
+                    style={event.status === "published" ? { backgroundColor: "#e6faf8", color: "#00CDB9" } : {}}
+                    >
                       {event.status === "published" ? "Publicado" : event.status === "draft" ? "Borrador" : event.status}
                     </span>
                     <Button asChild size="sm" variant="outline">

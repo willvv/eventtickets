@@ -14,6 +14,8 @@ import { formatDateCR, formatCurrency } from "@/lib/utils/date-format";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { IssueOrderButton } from "@/components/tickets/issue-order-button";
+import { CancelOrderButton } from "@/components/tickets/cancel-order-button";
+import { OrgNavbar } from "@/components/layout/org-navbar";
 export const dynamic = "force-dynamic";
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
@@ -61,16 +63,7 @@ export default async function TicketsPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">Entradas — {event.title}</h1>
-          </div>
-          <Button asChild size="sm">
-            <Link href={`/org/${orgSlug}/events/${eventId}`}>← Volver</Link>
-          </Button>
-        </div>
-      </header>
+      <OrgNavbar orgSlug={orgSlug} orgName={org.name} eventTitle={event.title} eventId={eventId} />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         {/* Summary */}
@@ -119,9 +112,22 @@ export default async function TicketsPage({ params }: PageProps) {
                       </td>
                       <td className="py-2 text-right pr-4">{formatCurrency(order.totalAmount, order.currency)}</td>
                       <td className="py-2 text-right">
-                        {(order.status === "reserved" || order.status === "paid") && (
-                          <IssueOrderButton orderId={order._id.toString()} orgId={org._id.toString()} />
-                        )}
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          {(order.status === "reserved" || order.status === "paid") && (
+                            <IssueOrderButton
+                              orderId={order._id.toString()}
+                              orgId={org._id.toString()}
+                              customerName={order.customerName ?? undefined}
+                            />
+                          )}
+                          {order.status !== "cancelled" && order.status !== "issued" && (
+                            <CancelOrderButton
+                              orderId={order._id.toString()}
+                              orgId={org._id.toString()}
+                              customerName={order.customerName ?? undefined}
+                            />
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

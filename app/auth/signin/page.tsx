@@ -1,17 +1,35 @@
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SignInPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (session) router.push("/");
   }, [session, router]);
+
+  const handleCredentials = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const res = await signIn("credentials", { email, password, redirect: false });
+    setLoading(false);
+    if (res?.error) {
+      setError("Credenciales incorrectas");
+    } else {
+      router.push("/");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -35,22 +53,15 @@ export default function SignInPage() {
             </svg>
             Continuar con Google
           </Button>
+
           <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">O ingrese su correo</span>
+              <span className="bg-white px-2 text-muted-foreground">O con contraseña</span>
             </div>
           </div>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const email = (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value;
-              await signIn("email", { email, callbackUrl: "/" });
-            }}
-            className="space-y-3"
-          >
+
+          <form onSubmit={handleCredentials} className="space-y-3">
             <input
               name="email"
               type="email"
@@ -58,8 +69,16 @@ export default function SignInPage() {
               required
               className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
-            <Button type="submit" className="w-full">
-              Enviar enlace de acceso
+            <input
+              name="password"
+              type="password"
+              placeholder="Contraseña"
+              required
+              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Ingresando..." : "Iniciar Sesión"}
             </Button>
           </form>
         </CardContent>

@@ -88,7 +88,7 @@ export default async function OrgOrdersPage({ params, searchParams }: PageProps)
         <div className="flex flex-wrap gap-3">
           <Link href={`/org/${orgSlug}/orders`}>
             <Card className={`px-4 py-3 cursor-pointer hover:shadow-md transition-shadow ${!status ? "ring-2" : ""}`}
-              style={!status ? { ringColor: "#00CDB9", borderColor: "#00CDB9" } : {}}>
+              style={!status ? { borderColor: "#00CDB9" } : {}}>
               <div className="text-xs font-medium text-muted-foreground">Todos</div>
               <div className="text-2xl font-bold">{totalByStatus.reduce((s, r) => s + r.count, 0)}</div>
             </Card>

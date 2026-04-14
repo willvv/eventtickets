@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Organization } from "@/models/Organization";
 import { Event } from "@/models/Event";
 import { QrScanner } from "@/components/scanner/qr-scanner";
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ orgSlug: string; eventId: string }>;

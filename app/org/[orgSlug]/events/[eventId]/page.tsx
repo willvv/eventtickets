@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateCR, formatCurrency } from "@/lib/utils/date-format";
 import Link from "next/link";
 import { TicketState } from "@/types/ticket";
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ orgSlug: string; eventId: string }>;

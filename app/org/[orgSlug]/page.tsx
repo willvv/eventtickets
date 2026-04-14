@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils/date-format";
 import Link from "next/link";
 import { CalendarDays, Ticket as TicketIcon, Users, TrendingUp } from "lucide-react";
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ orgSlug: string }>;

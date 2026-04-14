@@ -13,6 +13,7 @@ import { TicketState } from "@/types/ticket";
 import { formatDateCR, formatCurrency } from "@/lib/utils/date-format";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ orgSlug: string; eventId: string }>;

@@ -7,7 +7,7 @@ import { formatDateCR } from "@/lib/utils/date-format";
 import Link from "next/link";
 import { CalendarDays, MapPin } from "lucide-react";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function PublicEventsPage() {
   await connectDB();

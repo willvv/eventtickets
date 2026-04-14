@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle, Download } from "lucide-react";
 import Link from "next/link";
+export const dynamic = "force-dynamic";
 
 interface ClaimPageProps {
   params: Promise<{ token: string }>;

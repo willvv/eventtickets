@@ -27,7 +27,7 @@ export default async function HomePage() {
                   ? "/superadmin"
                   : session.user.orgSlug
                   ? `/org/${session.user.orgSlug}`
-                  : "/dashboard"
+                  : "/events"
               }>
                 Ir al Panel
               </Link>

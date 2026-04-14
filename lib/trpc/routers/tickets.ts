@@ -74,7 +74,7 @@ export const ticketsRouter = router({
           reservedUntil,
         }], { session });
 
-        const tickets = await Ticket.create(
+        const tickets = await Ticket.insertMany(
           input.seats.map((seat) => ({
             orgId: input.orgId,
             eventId: input.eventId,
@@ -90,7 +90,7 @@ export const ticketsRouter = router({
             state: TicketState.RESERVED,
             reservedAt: new Date(),
           })),
-          { session }
+          { session, ordered: true }
         );
 
         return { order: order[0], tickets };
@@ -379,6 +379,118 @@ export const ticketsRouter = router({
         (m: any) => m.id === (order as any).paymentMethodId
       );
       return { order, tickets, paymentMethod };
+    }),
+
+  // Admin creates an order directly (can auto-emit + mark complimentary)
+  createAdminOrder: orgMemberProcedure
+    .input(z.object({
+      eventId: z.string(),
+      orgId: z.string(),
+      customerName: z.string().min(1),
+      customerPhone: z.string().min(6),
+      customerEmail: z.string().email().optional(),
+      paymentMethodId: z.string().optional(),
+      paymentNotes: z.string().optional(),
+      isComplimentary: z.boolean().default(false),
+      autoIssue: z.boolean().default(false),
+      seats: z.array(z.object({
+        sectionId: z.string(),
+        sectionName: z.string(),
+        seatLabel: z.string().optional(),
+        price: z.number().min(0),
+        currency: z.enum(["CRC", "USD"]).default("CRC"),
+      })),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.role !== "superadmin" && ctx.session.user.orgId !== input.orgId) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return withTransaction(async (session) => {
+        const event = await Event.findOne({ _id: input.eventId, orgId: input.orgId }).session(session);
+        if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Evento no encontrado" });
+
+        const org = await mongoose.model("Organization").findById(input.orgId).session(session);
+
+        // For complimentary tickets, price is always 0
+        const seats = input.seats.map((s) => ({
+          ...s,
+          price: input.isComplimentary ? 0 : s.price,
+        }));
+        const totalAmount = seats.reduce((sum, s) => sum + s.price, 0);
+
+        // Use first payment method if none specified and not complimentary
+        let paymentMethodId = input.paymentMethodId;
+        let paymentMethod: any = null;
+        if (input.isComplimentary) {
+          // Create a virtual complimentary payment method entry
+          paymentMethodId = "complimentary";
+        } else {
+          paymentMethod = org?.paymentMethods?.find((m: any) => m.id === paymentMethodId);
+          if (!paymentMethod) throw new TRPCError({ code: "BAD_REQUEST", message: "Método de pago inválido" });
+        }
+
+        const order = await Order.create([{
+          orgId: input.orgId,
+          eventId: input.eventId,
+          userId: ctx.session.user.id,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          paymentMethodId: paymentMethodId ?? "admin",
+          paymentMethodType: input.isComplimentary ? "other" : (paymentMethod?.type ?? "other"),
+          paymentNotes: input.isComplimentary ? "Cortesía" : input.paymentNotes,
+          totalAmount,
+          currency: seats[0]?.currency ?? "CRC",
+          status: "reserved",
+        }], { session });
+
+        const tickets = await Ticket.insertMany(
+          seats.map((seat) => ({
+            orgId: input.orgId,
+            eventId: input.eventId,
+            orderId: order[0]._id,
+            sectionId: seat.sectionId,
+            sectionName: seat.sectionName,
+            seatLabel: seat.seatLabel,
+            price: seat.price,
+            currency: seat.currency,
+            isComplimentary: input.isComplimentary,
+            state: TicketState.RESERVED,
+            reservedAt: new Date(),
+          })),
+          { session, ordered: true }
+        );
+
+        let issuedTickets: any[] = [];
+        if (input.autoIssue) {
+          // Issue all tickets immediately
+          for (const ticket of tickets) {
+            const qrPayload = {
+              ticketId: ticket._id.toString(),
+              eventId: ticket.eventId.toString(),
+              orgId: ticket.orgId.toString(),
+              issuedAt: Date.now(),
+              nonce: nanoid(8),
+            };
+            const qrHmac = signTicketQr(qrPayload);
+            await Ticket.findByIdAndUpdate(ticket._id, { state: TicketState.ISSUED, qrHmac, issuedAt: new Date() }, { session });
+            issuedTickets.push({ ...ticket.toObject(), qrHmac, state: TicketState.ISSUED });
+          }
+          await Order.findByIdAndUpdate(order[0]._id, { status: "issued", paidAt: new Date() }, { session });
+
+          await AuditLog.create([{
+            orgId: input.orgId,
+            actorId: ctx.session.user.id,
+            actorRole: ctx.session.user.role,
+            action: "ticket.adminCreate",
+            resourceType: "order",
+            resourceId: order[0]._id.toString(),
+            metadata: { isComplimentary: input.isComplimentary, autoIssue: true },
+          }], { session });
+        }
+
+        return { order: order[0], tickets: input.autoIssue ? issuedTickets : tickets };
+      });
     }),
 
   cancelOrder: orgMemberProcedure

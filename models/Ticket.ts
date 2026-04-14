@@ -16,6 +16,7 @@ export interface ITicket extends Document {
   currency: "CRC" | "USD";
   state: TicketState;
   qrHmac?: string; // signed QR payload, set on ISSUED
+  isComplimentary?: boolean;
   reservedAt?: Date;
   issuedAt?: Date;
   claimedAt?: Date;
@@ -45,6 +46,7 @@ const TicketSchema = new Schema<ITicket>(
       required: true,
     },
     qrHmac: String,
+    isComplimentary: { type: Boolean, default: false },
     reservedAt: Date,
     issuedAt: Date,
     claimedAt: Date,

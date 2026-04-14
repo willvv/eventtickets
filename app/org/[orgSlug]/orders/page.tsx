@@ -77,6 +77,13 @@ export default async function OrgOrdersPage({ params, searchParams }: PageProps)
       <OrgNavbar orgSlug={orgSlug} orgName={org.name} />
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold" style={{ color: "#1B426E" }}>Órdenes</h1>
+          <Button asChild style={{ backgroundColor: "#FF7F50", color: "white" }} size="sm">
+            <Link href={`/org/${orgSlug}/orders/new`}>+ Nueva Orden</Link>
+          </Button>
+        </div>
+
         {/* Summary filter cards */}
         <div className="flex flex-wrap gap-3">
           <Link href={`/org/${orgSlug}/orders`}>
@@ -170,6 +177,8 @@ export default async function OrgOrdersPage({ params, searchParams }: PageProps)
                                 orderId={orderId}
                                 orgId={org._id.toString()}
                                 customerName={order.customerName ?? undefined}
+                                customerPhone={order.customerPhone ?? undefined}
+                                eventTitle={(order.eventId as any)?.title}
                               />
                             )}
                             {order.status !== "cancelled" && order.status !== "issued" && (

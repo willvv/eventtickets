@@ -1,31 +1,14 @@
-import { getCsrfToken } from "next-auth/react";
-import { headers } from "next/headers";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CredentialsForm } from "./credentials-form";
 
 export const dynamic = "force-dynamic";
-
-async function getToken() {
-  try {
-    // getCsrfToken works server-side in next-auth v4 via internal API
-    const headersList = await headers();
-    const host = headersList.get("host") || "";
-    const proto = headersList.get("x-forwarded-proto") || "https";
-    const baseUrl = `${proto}://${host}`;
-    const res = await fetch(`${baseUrl}/api/auth/csrf`, { cache: "no-store" });
-    const data = await res.json();
-    return data.csrfToken as string;
-  } catch {
-    return "";
-  }
-}
 
 export default async function SignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; callbackUrl?: string }>;
 }) {
-  const csrfToken = await getToken();
   const params = await searchParams;
   const callbackUrl = params.callbackUrl || "/";
   const error = params.error;
@@ -38,9 +21,7 @@ export default async function SignInPage({
           <CardDescription>Inicie sesión para continuar</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Google */}
           <form action="/api/auth/signin/google" method="POST">
-            <input type="hidden" name="csrfToken" value={csrfToken} />
             <input type="hidden" name="callbackUrl" value={callbackUrl} />
             <Button type="submit" variant="outline" size="lg" className="w-full">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -66,27 +47,7 @@ export default async function SignInPage({
             </p>
           )}
 
-          <form action="/api/auth/callback/credentials" method="POST" className="space-y-3">
-            <input type="hidden" name="csrfToken" value={csrfToken} />
-            <input type="hidden" name="callbackUrl" value={callbackUrl} />
-            <input
-              name="email"
-              type="email"
-              placeholder="correo@ejemplo.com"
-              required
-              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <input
-              name="password"
-              type="password"
-              placeholder="Contraseña"
-              required
-              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <Button type="submit" className="w-full">
-              Iniciar Sesión
-            </Button>
-          </form>
+          <CredentialsForm callbackUrl={callbackUrl} />
         </CardContent>
       </Card>
     </div>

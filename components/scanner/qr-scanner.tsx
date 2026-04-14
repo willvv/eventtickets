@@ -33,9 +33,9 @@ export function QrScanner({ orgId, eventId }: QrScannerProps) {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [manualInput, setManualInput] = useState("");
   const [showGroupPrompt, setShowGroupPrompt] = useState(false);
   const animFrameRef = useRef<number>(0);
+  const manualInputRef = useRef<HTMLInputElement>(null);
 
   const scanMutation = trpc.tickets.scan.useMutation({
     onSuccess: (data) => {
@@ -107,8 +107,9 @@ export function QrScanner({ orgId, eventId }: QrScannerProps) {
   };
 
   const handleManualScan = () => {
-    if (!manualInput.trim()) return;
-    handleQrDetected(manualInput.trim());
+    const val = manualInputRef.current?.value.trim() ?? "";
+    if (!val) return;
+    handleQrDetected(val);
   };
 
   const handleGroupScan = () => {
@@ -120,7 +121,7 @@ export function QrScanner({ orgId, eventId }: QrScannerProps) {
   const reset = () => {
     setResult(null);
     setError(null);
-    setManualInput("");
+    if (manualInputRef.current) manualInputRef.current.value = "";
   };
 
   useEffect(() => () => stopCamera(), []);
@@ -159,18 +160,16 @@ export function QrScanner({ orgId, eventId }: QrScannerProps) {
           )}
 
           {/* Manual input */}
-          <div className="flex gap-2">
+          <form onSubmit={(e) => { e.preventDefault(); handleManualScan(); }} className="flex gap-2">
             <input
+              ref={manualInputRef}
               className="flex-1 border rounded-md px-3 py-2 text-sm"
               placeholder="Buscar por nombre, orden o asiento..."
-              value={manualInput}
-              onChange={(e) => setManualInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleManualScan()}
             />
-            <Button onClick={handleManualScan} disabled={!manualInput.trim() || scanMutation.isPending}>
+            <Button type="submit" disabled={scanMutation.isPending}>
               Buscar
             </Button>
-          </div>
+          </form>
 
           {/* Result */}
           {(result || error) && (

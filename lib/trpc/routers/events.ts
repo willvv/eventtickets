@@ -40,6 +40,16 @@ export const eventsRouter = router({
       return event;
     }),
 
+  getPublicBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const event = await Event.findOne({ slug: input.slug, status: "published" })
+        .populate("orgId")
+        .lean();
+      if (!event) throw new TRPCError({ code: "NOT_FOUND" });
+      return event;
+    }),
+
   listByOrg: orgMemberProcedure
     .input(z.object({ orgId: z.string() }))
     .query(async ({ input, ctx }) => {

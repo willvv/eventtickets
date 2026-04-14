@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   "/auth/verify-request",
   "/o/",
   "/claim/",
+  "/orders/",
+  "/events/",
   "/api/auth/",
   "/api/login",
 ];

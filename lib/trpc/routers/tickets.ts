@@ -17,8 +17,8 @@ import { nanoid } from "nanoid";
 import mongoose from "mongoose";
 
 export const ticketsRouter = router({
-  // Reserve seats — called from both staff and public portal
-  reserve: protectedProcedure
+  // Reserve seats — public, no login required
+  reserve: publicProcedure
     .input(z.object({
       eventId: z.string(),
       orgId: z.string(),
@@ -32,9 +32,9 @@ export const ticketsRouter = router({
         currency: z.enum(["CRC", "USD"]).default("CRC"),
       })),
       paymentMethodId: z.string(),
-      customerName: z.string().optional(),
+      customerName: z.string().min(1, "El nombre es requerido"),
+      customerPhone: z.string().min(8, "El teléfono es requerido"),
       customerEmail: z.string().email().optional(),
-      customerPhone: z.string().optional(),
       paymentNotes: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
@@ -56,12 +56,14 @@ export const ticketsRouter = router({
           Date.now() + (org?.reservationTtlMinutes ?? 360) * 60 * 1000
         );
 
+        const userId = ctx.session?.user?.id ?? undefined;
+
         const order = await Order.create([{
           orgId: input.orgId,
           eventId: input.eventId,
-          userId: ctx.session.user.id,
-          customerName: input.customerName ?? ctx.session.user.name,
-          customerEmail: input.customerEmail ?? ctx.session.user.email,
+          userId,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail ?? ctx.session?.user?.email,
           customerPhone: input.customerPhone,
           paymentMethodId: input.paymentMethodId,
           paymentMethodType: paymentMethod.type,
@@ -77,7 +79,7 @@ export const ticketsRouter = router({
             orgId: input.orgId,
             eventId: input.eventId,
             orderId: order[0]._id,
-            userId: ctx.session.user.id,
+            userId,
             sectionId: seat.sectionId,
             sectionName: seat.sectionName,
             seatId: seat.seatId,
@@ -364,6 +366,20 @@ export const ticketsRouter = router({
       .populate("eventId")
       .sort({ createdAt: -1 });
   }),
+
+  getOrderWithTickets: publicProcedure
+    .input(z.object({ orderId: z.string() }))
+    .query(async ({ input }) => {
+      const order = await Order.findById(input.orderId).populate("eventId").lean();
+      if (!order) throw new TRPCError({ code: "NOT_FOUND" });
+      const tickets = await Ticket.find({ orderId: input.orderId }).lean();
+      // Fetch org for payment method details
+      const org = await mongoose.model("Organization").findById((order as any).orgId).lean();
+      const paymentMethod = (org as any)?.paymentMethods?.find(
+        (m: any) => m.id === (order as any).paymentMethodId
+      );
+      return { order, tickets, paymentMethod };
+    }),
 
   getEventStats: orgMemberProcedure
     .input(z.object({ eventId: z.string(), orgId: z.string() }))

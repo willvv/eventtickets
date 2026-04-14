@@ -19,7 +19,7 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, _req) {
         if (!credentials?.email || !credentials?.password) return null;
         await connectDB();
         const user = await User.findOne({ email: credentials.email.toLowerCase() });

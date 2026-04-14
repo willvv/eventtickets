@@ -1,21 +1,34 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
 export function CredentialsForm({ callbackUrl }: { callbackUrl: string }) {
-  const [csrfToken, setCsrfToken] = useState("");
-  const formRef = useRef<HTMLFormElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetch("/api/auth/csrf")
-      .then((r) => r.json())
-      .then((d) => setCsrfToken(d.csrfToken || ""));
-  }, []);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const fd = new FormData(e.currentTarget);
+    const result = await signIn("credentials", {
+      email: fd.get("email") as string,
+      password: fd.get("password") as string,
+      callbackUrl,
+      redirect: false,
+    });
+    setLoading(false);
+    if (result?.error) {
+      setError("Credenciales incorrectas");
+    } else if (result?.url) {
+      window.location.href = result.url;
+    }
+  }
 
   return (
-    <form ref={formRef} action="/api/auth/callback/credentials" method="POST" className="space-y-3">
-      <input type="hidden" name="csrfToken" value={csrfToken} />
-      <input type="hidden" name="callbackUrl" value={callbackUrl} />
+    <form onSubmit={handleSubmit} className="space-y-3">
+      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
       <input
         name="email"
         type="email"
@@ -30,8 +43,8 @@ export function CredentialsForm({ callbackUrl }: { callbackUrl: string }) {
         required
         className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
-      <Button type="submit" className="w-full" disabled={!csrfToken}>
-        Iniciar Sesión
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Iniciando..." : "Iniciar Sesión"}
       </Button>
     </form>
   );

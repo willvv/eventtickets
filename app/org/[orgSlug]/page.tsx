@@ -44,6 +44,9 @@ export default async function OrgDashboard({ params }: PageProps) {
               <Link href={`/org/${orgSlug}/events`}>Eventos</Link>
             </Button>
             <Button asChild variant="outline" size="sm">
+              <Link href={`/org/${orgSlug}/orders`}>Órdenes</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link href={`/org/${orgSlug}/members`}>Miembros</Link>
             </Button>
             <Button asChild variant="outline" size="sm">

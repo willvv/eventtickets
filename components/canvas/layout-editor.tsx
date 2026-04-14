@@ -73,7 +73,7 @@ export function LayoutEditor({ initialLayout, onSave, saving }: LayoutEditorProp
       width: type === "general-admission" ? 200 : 160,
       height: type === "general-admission" ? 150 : 120,
       color: DEFAULT_COLORS[layout.sections.length % DEFAULT_COLORS.length],
-      capacity: type === "general-admission" ? 100 : undefined,
+      capacity: 100,
     };
     pushHistory({ ...layout, sections: [...layout.sections, newSection] });
     setSelectedSectionId(newSection.id);
@@ -214,17 +214,15 @@ export function LayoutEditor({ initialLayout, onSave, saving }: LayoutEditorProp
                 <option value="general-admission">Área General</option>
               </select>
             </div>
-            {selectedSection.type === "general-admission" && (
-              <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Capacidad</label>
-                <input
-                  type="number"
-                  className="w-full border rounded px-2 py-1 text-sm"
-                  value={selectedSection.capacity ?? 0}
-                  onChange={(e) => updateSection(selectedSection.id, { capacity: parseInt(e.target.value) })}
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Capacidad</label>
+              <input
+                type="number"
+                className="w-full border rounded px-2 py-1 text-sm"
+                value={selectedSection.capacity ?? 0}
+                onChange={(e) => updateSection(selectedSection.id, { capacity: parseInt(e.target.value) })}
+              />
+            </div>
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">Color</label>
               <div className="flex flex-wrap gap-2">

@@ -16,6 +16,23 @@ import { Button } from "@/components/ui/button";
 import { IssueOrderButton } from "@/components/tickets/issue-order-button";
 export const dynamic = "force-dynamic";
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: "Pendiente",
+  reserved: "Reservado",
+  paid: "Pagado",
+  issued: "Emitido",
+  cancelled: "Cancelado",
+  refunded: "Reembolsado",
+};
+
+const PAYMENT_TYPE_LABELS: Record<string, string> = {
+  cash: "Efectivo",
+  card: "Tarjeta",
+  "bank-transfer": "Transferencia",
+  "mobile-payment": "SINPE Móvil",
+  other: "Otro",
+};
+
 interface PageProps {
   params: Promise<{ orgSlug: string; eventId: string }>;
 }
@@ -92,12 +109,12 @@ export default async function TicketsPage({ params }: PageProps) {
                         {order.customerPhone && <div className="text-xs text-muted-foreground">{order.customerPhone}</div>}
                       </td>
                       <td className="py-2 pr-4">
-                        <div>{order.paymentMethodType}</div>
+                        <div>{PAYMENT_TYPE_LABELS[order.paymentMethodType] ?? order.paymentMethodType}</div>
                         {order.paymentNotes && <div className="text-xs text-muted-foreground">{order.paymentNotes}</div>}
                       </td>
                       <td className="py-2 pr-4">
                         <Badge variant={order.status === "issued" ? "default" : order.status === "reserved" ? "outline" : "secondary"}>
-                          {order.status}
+                          {ORDER_STATUS_LABELS[order.status] ?? order.status}
                         </Badge>
                       </td>
                       <td className="py-2 text-right pr-4">{formatCurrency(order.totalAmount, order.currency)}</td>

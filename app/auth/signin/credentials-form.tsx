@@ -5,34 +5,24 @@ import { Button } from "@/components/ui/button";
 
 export function CredentialsForm({ callbackUrl }: { callbackUrl: string }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
     setLoading(true);
     const fd = new FormData(e.currentTarget);
-    const result = await signIn("credentials", {
+    // redirect: true → next-auth handles navigation directly
+    await signIn("credentials", {
       email: fd.get("email") as string,
       password: fd.get("password") as string,
       callbackUrl,
-      redirect: false,
+      redirect: true,
     });
+    // If we reach here, signIn returned without navigating (shouldn't happen with redirect:true)
     setLoading(false);
-    if (!result) {
-      setError("Sin respuesta del servidor");
-    } else if (result.error) {
-      setError("Error: " + result.error + " ok=" + result.ok + " url=" + result.url);
-    } else if (result.ok && result.url) {
-      window.location.href = result.url;
-    } else {
-      setError("Debug: " + JSON.stringify(result));
-    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
       <input
         name="email"
         type="email"

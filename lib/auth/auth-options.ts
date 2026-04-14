@@ -70,26 +70,33 @@ export const authOptions: AuthOptions = {
 
     async jwt({ token, user }) {
       if (user) {
-        await connectDB();
-        const dbUser = await User.findOne({ email: user.email?.toLowerCase() });
-        if (!dbUser) return token;
+        // Set immediately from authorize return value as fallback
+        token.id = (user as any).id ?? token.id;
+        token.role = (user as any).role ?? token.role;
+        try {
+          await connectDB();
+          const dbUser = await User.findOne({ email: user.email?.toLowerCase() });
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+            token.role = dbUser.role;
 
-        token.id = dbUser._id.toString();
-        token.role = dbUser.role;
-
-        // Resolve org membership (latest active org for org roles)
-        if (
-          dbUser.role === Role.ORG_ADMIN ||
-          dbUser.role === Role.ORG_STAFF
-        ) {
-          const membership = await OrgMember.findOne({
-            userId: dbUser._id,
-            acceptedAt: { $exists: true },
-          }).populate("orgId");
-          if (membership) {
-            token.orgId = (membership.orgId as any)._id.toString();
-            token.orgSlug = (membership.orgId as any).slug;
+            // Resolve org membership (latest active org for org roles)
+            if (
+              dbUser.role === Role.ORG_ADMIN ||
+              dbUser.role === Role.ORG_STAFF
+            ) {
+              const membership = await OrgMember.findOne({
+                userId: dbUser._id,
+                acceptedAt: { $exists: true },
+              }).populate("orgId");
+              if (membership) {
+                token.orgId = (membership.orgId as any)._id.toString();
+                token.orgSlug = (membership.orgId as any).slug;
+              }
+            }
           }
+        } catch (_e) {
+          // DB unavailable — keep values from authorize
         }
       }
       return token;

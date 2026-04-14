@@ -18,16 +18,15 @@ export function CredentialsForm({ callbackUrl }: { callbackUrl: string }) {
       callbackUrl,
       redirect: false,
     });
-    console.log("signIn result:", JSON.stringify(result));
     setLoading(false);
     if (!result) {
       setError("Sin respuesta del servidor");
     } else if (result.error) {
-      setError("Credenciales incorrectas");
+      setError("Error: " + result.error + " ok=" + result.ok + " url=" + result.url);
     } else if (result.ok && result.url) {
       window.location.href = result.url;
     } else {
-      setError("Error desconocido: " + JSON.stringify(result));
+      setError("Debug: " + JSON.stringify(result));
     }
   }
 

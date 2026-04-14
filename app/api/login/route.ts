@@ -51,12 +51,18 @@ export async function POST(req: NextRequest) {
   const location = authRes.headers.get("location");
   const setCookieHeaders = authRes.headers.getSetCookie?.() ?? [];
 
+  // Determine redirect target
   const redirectUrl = location || callbackUrl;
-  const res = NextResponse.redirect(new URL(redirectUrl, base));
+  const targetUrl = new URL(redirectUrl.startsWith("/") ? redirectUrl : new URL(redirectUrl).pathname, base);
+
+  // Use 303 See Other so browser switches to GET after the POST
+  const res = new NextResponse(null, {
+    status: 303,
+    headers: { location: targetUrl.toString() },
+  });
   for (const cookie of setCookieHeaders) {
     res.headers.append("set-cookie", cookie);
   }
-  // Also forward CSRF cookies in case browser doesn't have them
   for (const cookie of csrfCookies) {
     res.headers.append("set-cookie", cookie);
   }

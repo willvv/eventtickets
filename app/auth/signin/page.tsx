@@ -41,13 +41,7 @@ export default async function SignInPage({
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 text-center">
-              {error === "CredentialsSignin" ? "Credenciales incorrectas" : `Error: ${error}`}
-            </p>
-          )}
-
-          <CredentialsForm callbackUrl={callbackUrl} />
+          <CredentialsForm callbackUrl={callbackUrl} error={error} />
         </CardContent>
       </Card>
     </div>

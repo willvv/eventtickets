@@ -22,13 +22,7 @@ export default function SignInPage() {
     const form = e.currentTarget;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
-    const res = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (res?.error) {
-      setError("Credenciales incorrectas");
-    } else {
-      router.push("/");
-    }
+    await signIn("credentials", { email, password, callbackUrl: "/" });
   };
 
   return (
